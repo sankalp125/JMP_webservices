@@ -35,7 +35,11 @@ fun Routing.normalRoutes(){
         get("/countries"){
             try{
                 val countries = CountryService(CountryRepository).getAllCountries()
-                call.respond(HttpStatusCode.OK, countries)
+                if(countries.isNotEmpty()) {
+                    call.respond(HttpStatusCode.OK, countries)
+                }else{
+                    call.respond(HttpStatusCode.NotFound, ErrorResponse("No data found!"))
+                }
             }catch (e : Exception){
                 call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "${e.localizedMessage}"))
             }

@@ -2,13 +2,13 @@ package com.example
 
 object Constants {
     //staging
-    const val JDBC_URL = "jdbc:postgresql://localhost:5432/jmp_db"
-    const val DB_USER = "postgres"
-    const val DB_PASSWORD = "123456"
-    const val ACCESS_SECRET = "access_token_secret_key"
-    const val REFRESH_SECRET = "refresh_token_secret_key"
-    const val ISSUER = "issuer"
-    const val AUDIENCE = "audience"
-    const val ACCESS_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 60 // 1 hour
-    const val REFRESH_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 60 * 24 * 30L // 30 days
+    val JDBC_URL = System.getenv("DB_URL") ?: "jdbc:postgresql://localhost:5432/jmp_db"
+    val DB_USER = System.getenv("DB_USER") ?: "postgres"
+    val DB_PASSWORD = System.getenv("DB_PASS") ?: "123456"
+    val ACCESS_SECRET = System.getenv("ACCESS_KEY") ?: "access_token_secret_key"
+    val REFRESH_SECRET = System.getenv("REFRESH_KEY") ?: "refresh_token_secret_key"
+    val ISSUER = System.getenv("JWT_ISSUER") ?: "issuer"
+    val AUDIENCE = System.getenv("JWT_AUDIENCE") ?: "audience"
+    const val ACCESS_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 15 // 15 minutes
+    const val REFRESH_TOKEN_VALIDITY_IN_MS = 1_000 * 60 * 60 * 24 * 7L // 7 days
 }

@@ -1,0 +1,1691 @@
+openapi: 3.0.3
+info:
+  description: "Application API for managing countries, states, cities, user authentication,\
+    \ profiles, and products."
+  title: Application API
+  version: 1.0.0
+servers:
+- url: http://0.0.0.0:8080
+paths:
+  /api/v1/normal/countries:
+    get:
+      description: Fetches a list of all countries.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Country'
+                type: array
+          description: List of countries retrieved successfully.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: No data found!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No data found
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Get All Countries
+      x-accepts:
+      - application/json
+  /api/v1/normal/states/{countryId}:
+    get:
+      description: Fetches a list of states for the specified country UUID.
+      parameters:
+      - description: UUID of the country
+        explode: false
+        in: path
+        name: countryId
+        required: true
+        schema:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/State'
+                type: array
+          description: List of states retrieved successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                BadRequestExample:
+                  value:
+                    error: Missing parameter country
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request - Missing or invalid countryId parameter.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: No data found!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No states found for given country ID.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Get States by Country ID
+      x-accepts:
+      - application/json
+  /api/v1/normal/cities/{stateId}:
+    get:
+      description: Fetches a list of cities for the specified state UUID.
+      parameters:
+      - description: UUID of the state
+        explode: false
+        in: path
+        name: stateId
+        required: true
+        schema:
+          example: 223e4567-e89b-12d3-a456-426614174111
+          format: uuid
+          type: string
+        style: simple
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/City'
+                type: array
+          description: List of cities retrieved successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                BadRequestExample:
+                  value:
+                    error: Missing parameter State
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request - Missing or invalid stateId parameter.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: No data found!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No cities found for given state ID.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Get Cities by State ID
+      x-accepts:
+      - application/json
+  /api/v1/normal/register:
+    post:
+      description: Registers a new user with provided details and optional profile
+        photo.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/_api_v1_normal_register_post_request'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_register_post_201_response'
+          description: User created successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                ValidationError:
+                  value:
+                  - Invalid email format
+                PhotoUploadError:
+                  value:
+                    error: Photo upload failed
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_register_post_400_response'
+          description: Bad Request - Validation errors or photo upload failed.
+        "409":
+          content:
+            application/json:
+              examples:
+                ConflictExample:
+                  value:
+                    error: User already exist
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Conflict - User already exists.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Register a new user
+      x-content-type: multipart/form-data
+      x-accepts:
+      - application/json
+  /api/v1/normal/login:
+    post:
+      description: Authenticates a user and returns access and refresh tokens.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserLoginDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+          description: "Login successful, returns access and refresh tokens."
+        "400":
+          content:
+            application/json:
+              examples:
+                InvalidPassword:
+                  value:
+                    error: Incorrect Password!
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_register_post_400_response'
+          description: Bad Request - Invalid credentials.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: User not found!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: User not found.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: User Login
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/normal/request-password-reset:
+    post:
+      description: Sends an OTP to the user's email for password reset.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_request_password_reset_post_200_response'
+          description: OTP sent successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: User not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: User not found.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Request Password Reset
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/normal/reset-password:
+    post:
+      description: Resets the user's password using the provided OTP.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetVerifyDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_reset_password_post_200_response'
+          description: Password reset successful.
+        "400":
+          content:
+            application/json:
+              examples:
+                InvalidOTP:
+                  value:
+                    error: Invalid OTP or OTP expired
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_register_post_400_response'
+          description: Bad Request - Invalid OTP or validation errors.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Reset Password
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/normal/resend-otp:
+    post:
+      description: Resends an OTP to the user's email for password reset.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequestDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_resend_otp_post_200_response'
+          description: OTP resent successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: User not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: User not found.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Resend OTP for Password Reset
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/normal/refresh-token:
+    post:
+      description: Generates a new access and refresh token using a valid refresh
+        token.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TokenRefreshRequestDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenRefreshResponseDto'
+          description: Tokens refreshed successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid or expired refresh token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or expired refresh token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Refresh Access Token
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/normal/get_categories:
+    get:
+      description: Fetches a list of all categories.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Category'
+                type: array
+          description: List of categories retrieved successfully.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: No data found!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No data found
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      summary: Get All Categories
+      x-accepts:
+      - application/json
+  /api/v1/protected/profile:
+    get:
+      description: Fetches the profile details of the authenticated user.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: User profile retrieved successfully.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: "Invalid Token: Missing user ID"
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "404":
+          content:
+            application/json:
+              examples:
+                NotFoundExample:
+                  value:
+                    error: User not found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: User not found.
+      security:
+      - BearerAuth: []
+      summary: Get User Profile
+      x-accepts:
+      - application/json
+  /api/v1/protected/update-profile-details:
+    put:
+      description: Updates the profile details of the authenticated user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProfileDetailsDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_update_profile_details_put_200_response'
+          description: Profile details updated successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update User Profile Details
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/protected/update-profile-picture:
+    put:
+      description: Updates the profile picture of the authenticated user.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/_api_v1_protected_update_profile_picture_put_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_update_profile_picture_put_200_response'
+          description: Profile picture updated successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                BadRequestExample:
+                  value:
+                    error: Photo upload failed
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request - Missing or invalid photo.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update User Profile Picture
+      x-content-type: multipart/form-data
+      x-accepts:
+      - application/json
+  /api/v1/protected/update-password:
+    put:
+      description: Updates the password of the authenticated user.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePasswordDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_update_password_put_200_response'
+          description: Password updated successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                IncorrectPassword:
+                  value:
+                    error: Incorrect Old Password!
+              schema:
+                $ref: '#/components/schemas/_api_v1_normal_register_post_400_response'
+          description: Bad Request - Validation errors or incorrect old password.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Some error occurred while updating password!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update User Password
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/protected/add-product:
+    post:
+      description: Adds a new product with details and optional images.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/_api_v1_protected_add_product_post_request'
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_add_product_post_201_response'
+          description: Product added successfully.
+        "202":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_add_product_post_202_response'
+          description: "Product added, but some images failed to upload."
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Add a New Product
+      x-content-type: multipart/form-data
+      x-accepts:
+      - application/json
+  /api/v1/protected/product-list:
+    get:
+      description: Fetches a list of all products.
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/Product'
+                type: array
+          description: List of products retrieved successfully.
+        "204":
+          content:
+            application/json:
+              examples:
+                NoContentExample:
+                  value:
+                    error: No product found
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: No products found.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Get Product List
+      x-accepts:
+      - application/json
+  /api/v1/protected/product-details:
+    get:
+      description: Fetches details of a specific product.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductDetailsDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+          description: Product details retrieved successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Get Product Details
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/protected/update-product:
+    put:
+      description: Updates the details of a specific product.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateProductDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_update_product_put_200_response'
+          description: Product updated successfully.
+        "400":
+          content:
+            application/json:
+              schema:
+                items:
+                  type: string
+                type: array
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Update Product Details
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+  /api/v1/protected/add-product-picture:
+    put:
+      description: Adds a new picture to an existing product.
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/_api_v1_protected_add_product_picture_put_request'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_add_product_picture_put_200_response'
+          description: Picture added successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                BadRequestExample:
+                  value:
+                    error: Parameter missing!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request - Missing parameters.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Add Product Picture
+      x-content-type: multipart/form-data
+      x-accepts:
+      - application/json
+  /api/v1/protected/delete-product:
+    delete:
+      description: Deletes a specific product and its associated pictures.
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ProductDetailsDto'
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/_api_v1_protected_delete_product_delete_200_response'
+          description: Product deleted successfully.
+        "400":
+          content:
+            application/json:
+              examples:
+                BadRequestExample:
+                  value:
+                    error: Parameter missing!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad Request - Validation errors.
+        "401":
+          content:
+            application/json:
+              examples:
+                UnauthorizedExample:
+                  value:
+                    error: Invalid Token!
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Unauthorized - Invalid or missing token.
+        "500":
+          content:
+            application/json:
+              examples:
+                ServerErrorExample:
+                  value:
+                    error: Something went wrong
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Internal Server Error
+      security:
+      - BearerAuth: []
+      summary: Delete Product
+      x-content-type: application/json
+      x-accepts:
+      - application/json
+components:
+  schemas:
+    Country:
+      example:
+        code: IN
+        name: India
+        id: 123e4567-e89b-12d3-a456-426614174000
+      properties:
+        id:
+          example: 123e4567-e89b-12d3-a456-426614174000
+          format: uuid
+          type: string
+        name:
+          example: India
+          type: string
+        code:
+          example: IN
+          type: string
+      required:
+      - code
+      - id
+      - name
+      type: object
+    State:
+      example:
+        code: MH
+        name: Maharashtra
+        id: 223e4567-e89b-12d3-a456-426614174111
+      properties:
+        id:
+          example: 223e4567-e89b-12d3-a456-426614174111
+          format: uuid
+          type: string
+        name:
+          example: Maharashtra
+          type: string
+        code:
+          example: MH
+          type: string
+      required:
+      - code
+      - id
+      - name
+      type: object
+    City:
+      example:
+        code: MU
+        name: Mumbai
+        id: 323e4567-e89b-12d3-a456-426614174222
+      properties:
+        id:
+          example: 323e4567-e89b-12d3-a456-426614174222
+          format: uuid
+          type: string
+        name:
+          example: Mumbai
+          type: string
+        code:
+          example: MU
+          type: string
+      required:
+      - code
+      - id
+      - name
+      type: object
+    Category:
+      example:
+        name: Electronics
+        id: 423e4567-e89b-12d3-a456-426614174333
+      properties:
+        id:
+          example: 423e4567-e89b-12d3-a456-426614174333
+          format: uuid
+          type: string
+        name:
+          example: Electronics
+          type: string
+      required:
+      - id
+      - name
+      type: object
+    User:
+      example:
+        country: India
+        photoUrl: http://example.com/photos/john_doe.jpg
+        city: Mumbai
+        name: John Doe
+        mobile: "+1234567890"
+        id: 623e4567-e89b-12d3-a456-426614174555
+        state: Maharashtra
+        email: john.doe@example.com
+      properties:
+        id:
+          example: 623e4567-e89b-12d3-a456-426614174555
+          format: uuid
+          type: string
+        name:
+          example: John Doe
+          type: string
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+        mobile:
+          example: "+1234567890"
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        photoUrl:
+          example: http://example.com/photos/john_doe.jpg
+          type: string
+      required:
+      - city
+      - country
+      - email
+      - id
+      - mobile
+      - name
+      - state
+      type: object
+    UserDto:
+      properties:
+        name:
+          example: John Doe
+          type: string
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+        password:
+          example: password123
+          type: string
+        mobileNo:
+          example: "+1234567890"
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        photoUrl:
+          example: http://example.com/photos/john_doe.jpg
+          type: string
+      required:
+      - city
+      - country
+      - email
+      - mobileNo
+      - name
+      - password
+      - state
+      type: object
+    UpdateProfileDetailsDto:
+      example:
+        country: India
+        city: Mumbai
+        name: John Doe
+        mobileNo: "+1234567890"
+        state: Maharashtra
+      properties:
+        name:
+          example: John Doe
+          type: string
+        mobileNo:
+          example: "+1234567890"
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+      required:
+      - city
+      - country
+      - mobileNo
+      - name
+      - state
+      type: object
+    UpdatePasswordDto:
+      example:
+        oldPassword: password123
+        newPassword: newpassword123
+      properties:
+        oldPassword:
+          example: password123
+          type: string
+        newPassword:
+          example: newpassword123
+          type: string
+      required:
+      - newPassword
+      - oldPassword
+      type: object
+    UserLoginDto:
+      example:
+        password: password123
+        email: john.doe@example.com
+      properties:
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+        password:
+          example: password123
+          type: string
+      required:
+      - email
+      - password
+      type: object
+    LoginResponse:
+      example:
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      properties:
+        accessToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          type: string
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          type: string
+      required:
+      - accessToken
+      - refreshToken
+      type: object
+    PasswordResetRequestDto:
+      example:
+        email: john.doe@example.com
+      properties:
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+      required:
+      - email
+      type: object
+    PasswordResetVerifyDto:
+      example:
+        newPassword: newpassword123
+        otp: "123456"
+        email: john.doe@example.com
+      properties:
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+        otp:
+          example: "123456"
+          type: string
+        newPassword:
+          example: newpassword123
+          type: string
+      required:
+      - email
+      - newPassword
+      - otp
+      type: object
+    TokenRefreshRequestDto:
+      example:
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      properties:
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          type: string
+      required:
+      - refreshToken
+      type: object
+    TokenRefreshResponseDto:
+      example:
+        accessToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+        refreshToken: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+      properties:
+        accessToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          type: string
+        refreshToken:
+          example: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
+          type: string
+      required:
+      - accessToken
+      - refreshToken
+      type: object
+    Product:
+      example:
+        discription: A high-end smartphone.
+        forState: Maharashtra
+        price: 699.99
+        tillDate: 2025-12-31
+        pictureUrl: http://example.com/photos/smartphone.jpg
+        name: Smartphone
+        forCountry: India
+        forCity: Mumbai
+        active: true
+        id: 523e4567-e89b-12d3-a456-426614174444
+        category: Electronics
+        uploadedBy: 623e4567-e89b-12d3-a456-426614174555
+      properties:
+        id:
+          example: 523e4567-e89b-12d3-a456-426614174444
+          format: uuid
+          type: string
+        uploadedBy:
+          example: 623e4567-e89b-12d3-a456-426614174555
+          format: uuid
+          type: string
+        name:
+          example: Smartphone
+          type: string
+        category:
+          example: Electronics
+          type: string
+        discription:
+          example: A high-end smartphone.
+          type: string
+        price:
+          example: 699.99
+          format: double
+          type: number
+        tillDate:
+          example: 2025-12-31
+          type: string
+        forCountry:
+          example: India
+          type: string
+        forState:
+          example: Maharashtra
+          type: string
+        forCity:
+          example: Mumbai
+          type: string
+        pictureUrl:
+          example: http://example.com/photos/smartphone.jpg
+          type: string
+        active:
+          example: true
+          type: boolean
+      required:
+      - active
+      - category
+      - discription
+      - forCity
+      - forCountry
+      - forState
+      - id
+      - name
+      - pictureUrl
+      - price
+      - tillDate
+      - uploadedBy
+      type: object
+    AddProductDto:
+      properties:
+        productName:
+          example: Smartphone
+          type: string
+        category:
+          example: Electronics
+          type: string
+        description:
+          example: A high-end smartphone.
+          type: string
+        price:
+          example: 699.99
+          format: double
+          type: number
+        tillDate:
+          example: 2025-12-31
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        photoUrl:
+          example: http://example.com/photos/smartphone.jpg
+          type: string
+        active:
+          example: true
+          type: boolean
+      required:
+      - active
+      - category
+      - city
+      - country
+      - description
+      - photoUrl
+      - price
+      - productName
+      - state
+      - tillDate
+      type: object
+    UpdateProductDto:
+      example:
+        country: India
+        productId: 523e4567-e89b-12d3-a456-426614174444
+        city: Mumbai
+        price: 699.99
+        tillDate: 2025-12-31
+        description: A high-end smartphone.
+        active: true
+        state: Maharashtra
+        category: Electronics
+        productName: Smartphone
+      properties:
+        productId:
+          example: 523e4567-e89b-12d3-a456-426614174444
+          format: uuid
+          type: string
+        productName:
+          example: Smartphone
+          type: string
+        category:
+          example: Electronics
+          type: string
+        description:
+          example: A high-end smartphone.
+          type: string
+        price:
+          example: 699.99
+          format: double
+          type: number
+        tillDate:
+          example: 2025-12-31
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        active:
+          example: true
+          type: boolean
+      required:
+      - active
+      - category
+      - city
+      - country
+      - description
+      - price
+      - productId
+      - productName
+      - state
+      - tillDate
+      type: object
+    ProductDetailsDto:
+      example:
+        productId: 523e4567-e89b-12d3-a456-426614174444
+      properties:
+        productId:
+          example: 523e4567-e89b-12d3-a456-426614174444
+          format: uuid
+          type: string
+      required:
+      - productId
+      type: object
+    ProductUrl:
+      properties:
+        prodId:
+          example: 523e4567-e89b-12d3-a456-426614174444
+          format: uuid
+          type: string
+        photoUrl:
+          example: http://example.com/photos/smartphone_additional.jpg
+          type: string
+      required:
+      - photoUrl
+      - prodId
+      type: object
+    ErrorResponse:
+      example:
+        error: Something went wrong
+      properties:
+        error:
+          example: Something went wrong
+          type: string
+      required:
+      - error
+      type: object
+    _api_v1_normal_register_post_request:
+      properties:
+        name:
+          example: John Doe
+          type: string
+        email:
+          example: john.doe@example.com
+          format: email
+          type: string
+        password:
+          example: password123
+          type: string
+        mobileNo:
+          example: "+1234567890"
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        photo:
+          format: binary
+          type: string
+      required:
+      - city
+      - country
+      - email
+      - mobileNo
+      - name
+      - password
+      - state
+      type: object
+    _api_v1_normal_register_post_201_response:
+      example:
+        message: User created Successfully
+      properties:
+        message:
+          example: User created Successfully
+          type: string
+      type: object
+    _api_v1_normal_register_post_400_response:
+      oneOf:
+      - items:
+          type: string
+        type: array
+      - $ref: '#/components/schemas/ErrorResponse'
+    _api_v1_normal_request_password_reset_post_200_response:
+      example:
+        message: OTP sent to your email
+      properties:
+        message:
+          example: OTP sent to your email
+          type: string
+      type: object
+    _api_v1_normal_reset_password_post_200_response:
+      example:
+        message: Password reset successful
+      properties:
+        message:
+          example: Password reset successful
+          type: string
+      type: object
+    _api_v1_normal_resend_otp_post_200_response:
+      example:
+        message: OTP resent to your email
+      properties:
+        message:
+          example: OTP resent to your email
+          type: string
+      type: object
+    _api_v1_protected_update_profile_details_put_200_response:
+      example:
+        message: Profile details updated successfully
+      properties:
+        message:
+          example: Profile details updated successfully
+          type: string
+      type: object
+    _api_v1_protected_update_profile_picture_put_request:
+      properties:
+        photo:
+          format: binary
+          type: string
+      required:
+      - photo
+      type: object
+    _api_v1_protected_update_profile_picture_put_200_response:
+      example:
+        message: Profile picture updated successfully
+      properties:
+        message:
+          example: Profile picture updated successfully
+          type: string
+      type: object
+    _api_v1_protected_update_password_put_200_response:
+      example:
+        message: Password updated successfully!
+      properties:
+        message:
+          example: Password updated successfully!
+          type: string
+      type: object
+    _api_v1_protected_add_product_post_request:
+      properties:
+        productName:
+          example: Smartphone
+          type: string
+        category:
+          example: Electronics
+          type: string
+        description:
+          example: A high-end smartphone.
+          type: string
+        price:
+          example: 699.99
+          format: double
+          type: number
+        tillDate:
+          example: 2025-12-31
+          type: string
+        country:
+          example: India
+          type: string
+        state:
+          example: Maharashtra
+          type: string
+        city:
+          example: Mumbai
+          type: string
+        picture:
+          format: binary
+          type: string
+        files:
+          items:
+            format: binary
+            type: string
+          type: array
+        active:
+          example: true
+          type: boolean
+      required:
+      - category
+      - city
+      - country
+      - description
+      - price
+      - productName
+      - state
+      - tillDate
+      type: object
+    _api_v1_protected_add_product_post_201_response:
+      example:
+        message: Product added successfully
+      properties:
+        message:
+          example: Product added successfully
+          type: string
+      type: object
+    _api_v1_protected_add_product_post_202_response:
+      example:
+        message: Product added successfully but some error occurred in uploading images
+          try to upload them by edit product!
+      properties:
+        message:
+          example: Product added successfully but some error occurred in uploading
+            images try to upload them by edit product!
+          type: string
+      type: object
+    _api_v1_protected_update_product_put_200_response:
+      example:
+        message: Product updated successfully
+      properties:
+        message:
+          example: Product updated successfully
+          type: string
+      type: object
+    _api_v1_protected_add_product_picture_put_request:
+      properties:
+        productId:
+          example: 523e4567-e89b-12d3-a456-426614174444
+          format: uuid
+          type: string
+        photo:
+          format: binary
+          type: string
+      required:
+      - photo
+      - productId
+      type: object
+    _api_v1_protected_add_product_picture_put_200_response:
+      example:
+        message: Picture added successfully
+      properties:
+        message:
+          example: Picture added successfully
+          type: string
+      type: object
+    _api_v1_protected_delete_product_delete_200_response:
+      example:
+        message: Product deleted successfully
+      properties:
+        message:
+          example: Product deleted successfully
+          type: string
+      type: object
+  securitySchemes:
+    BearerAuth:
+      bearerFormat: JWT
+      scheme: bearer
+      type: http
+
