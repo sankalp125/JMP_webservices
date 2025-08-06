@@ -17,12 +17,12 @@ group = "com.example"
 version = "0.0.1"
 
 application {
-    mainClass = "io.ktor.server.netty.EngineMain"
+    mainClass = "com.example.ApplicationKt"
 }
 tasks{
     jar{
         manifest{
-            attributes["Main-Class"] = "io.ktor.server.netty.EngineMain"
+            attributes["Main-Class"] = "com.example.ApplicationKt"
         }
     }
 }
