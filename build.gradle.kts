@@ -17,7 +17,13 @@ group = "com.example"
 version = "0.0.1"
 
 application {
-    mainClass = "com.example.ApplicationKt"
+//    mainClass = "com.example.ApplicationKt"
+    mainClass.set("com.example.ApplicationKt")
+}
+ktor{
+    fatJar{
+        archiveFileName.set("fat.jar")
+    }
 }
 tasks{
     jar{
