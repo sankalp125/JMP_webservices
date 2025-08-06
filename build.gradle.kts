@@ -19,6 +19,13 @@ version = "0.0.1"
 application {
     mainClass = "io.ktor.server.netty.EngineMain"
 }
+tasks{
+    jar{
+        manifest{
+            attributes["Main-Class"] = "io.ktor.server.netty.EngineMain"
+        }
+    }
+}
 
 repositories {
     mavenCentral()
