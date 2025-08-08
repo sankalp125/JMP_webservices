@@ -17,19 +17,11 @@ group = "com.example"
 version = "0.0.1"
 
 application {
-//    mainClass = "com.example.ApplicationKt"
     mainClass.set("com.example.ApplicationKt")
 }
-ktor{
-    fatJar{
+ktor {
+    fatJar {
         archiveFileName.set("fat.jar")
-    }
-}
-tasks{
-    jar{
-        manifest{
-            attributes["Main-Class"] = "com.example.ApplicationKt"
-        }
     }
 }
 
