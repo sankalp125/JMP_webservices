@@ -1,12 +1,13 @@
 package com.example.config
 
+import com.example.Constants
 import java.io.File
 import java.io.InputStream
 import java.util.UUID
 
 object FileHandler {
     private const val PATH = "uploads"
-    private const val BASE_URL = "http://localhost:8080/uploads"
+    private const val BASE_URL = Constants.PICTURE_URL
     private const val MAX_FILE_SIZE : Long = 5*1024*1024
     private val allowedExtensions: Set<String> = setOf("jpg", "jpeg", "png", "pdf")
 
