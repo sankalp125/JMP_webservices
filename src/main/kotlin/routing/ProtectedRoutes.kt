@@ -62,10 +62,10 @@ fun Routing.protectedRoutes() {
 
             put("/update-profile-details") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null) {
-                    return@put call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token"))
-                }
+                val userId = principal?.subject ?: return@put call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
                 val params = call.receive<UpdateProfileDetailsDto>()
                 val errorList = validateProfileData(params)
                 if (errorList.isNotEmpty()) {
@@ -81,10 +81,10 @@ fun Routing.protectedRoutes() {
 
             put("update-profile-picture") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null) {
-                    return@put call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid token"))
-                }
+                val userId = principal?.subject ?: return@put call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid token")
+                )
                 val multipart = call.receiveMultipart()
                 var profilePictureName: String? = null
                 var profilePictureStream: InputStream? = null
@@ -146,10 +146,10 @@ fun Routing.protectedRoutes() {
 
             put("/update-password") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null) {
-                    return@put call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token"))
-                }
+                val userId = principal?.subject ?: return@put call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
                 try {
                     val updatePasswordParams = call.receive<UpdatePasswordDto>()
                     val errorList = validateUpdatePassword(updatePasswordParams)
@@ -181,10 +181,10 @@ fun Routing.protectedRoutes() {
 
             post("/add-product") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null) {
-                    return@post call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token!"))
-                }
+                val userId = principal?.subject ?: return@post call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token!")
+                )
                 val multipart = call.receiveMultipart()
                 var pictureStream: InputStream? = null
                 var pictureName: String? = null
@@ -297,10 +297,10 @@ fun Routing.protectedRoutes() {
 
             get("/product-list"){
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null){
-                    return@get call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token"))
-                }
+                val userId = principal?.subject ?: return@get call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
                 try {
                     val products = ProductRepository.getProductList()
                     if (products.isEmpty()) {
@@ -313,19 +313,12 @@ fun Routing.protectedRoutes() {
                 }
             }
 
-            get("/product-details"){
+            get("/product-details/{product-id}"){
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null){
-                    return@get call.respond(HttpStatusCode.Unauthorized, "Invalid Token")
-                }
-                val params = call.receive<ProductDetailsDto>()
-                val errors = validateProductDetailsDto(params)
-                if (errors.isNotEmpty()){
-                    return@get call.respond(HttpStatusCode.BadRequest, errors)
-                }
+                val userId = principal?.subject ?: return@get call.respond(HttpStatusCode.Unauthorized, "Invalid Token")
+                val productId = call.parameters["product-id"] ?: return@get call.respond(HttpStatusCode.BadRequest, ErrorResponse(error = "Product id can not be empty!"))
                 try{
-                    val productDetails = ProductRepository.getProductDetails(UUID.fromString(params.productId))
+                    val productDetails = ProductRepository.getProductDetails(UUID.fromString(productId))
                     call.respond(HttpStatusCode.OK, productDetails)
                 }catch (e : Exception){
                     call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
@@ -333,10 +326,10 @@ fun Routing.protectedRoutes() {
             }
             put("/update-product"){
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null){
-                    return@put call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token"))
-                }
+                val userId = principal?.subject ?: return@put call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
                 val params = call.receive<UpdateProductDto>()
                 val errors = validateUpdateProductDto(params)
                 if (errors.isNotEmpty()){
@@ -351,10 +344,10 @@ fun Routing.protectedRoutes() {
             }
             put("/add-product-picture"){
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null){
-                    return@put call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token"))
-                }
+                val userId = principal?.subject ?: return@put call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token")
+                )
                 val multipart = call.receiveMultipart()
                 var productId = ""
                 var uploadStream : InputStream? = null
@@ -396,10 +389,10 @@ fun Routing.protectedRoutes() {
 
             delete("/delete-product") {
                 val principal = call.principal<JWTPrincipal>()
-                val userId = principal?.subject
-                if (userId == null){
-                    return@delete call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token!"))
-                }
+                val userId = principal?.subject ?: return@delete call.respond(
+                    HttpStatusCode.Unauthorized,
+                    ErrorResponse(error = "Invalid Token!")
+                )
                 try {
                     val params = call.receive<ProductDetailsDto>()
                     val errors = validateProductDetailsDto(params)
