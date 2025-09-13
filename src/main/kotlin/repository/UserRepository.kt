@@ -112,4 +112,14 @@ object UserRepository {
             throw Exception(e.localizedMessage)
         }
     }
+    fun getProfilePicture(userId : UUID) : String = transaction{
+        try {
+            UserTable
+                .select { UserTable.userId eq userId }
+                .map { it[UserTable.photoUrl] }
+                .firstOrNull() ?: "Unknown"
+        }catch (e : Exception){
+            throw Exception(e.localizedMessage)
+        }
+    }
 }

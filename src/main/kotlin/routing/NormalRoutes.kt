@@ -145,9 +145,11 @@ fun Routing.normalRoutes(){
                     if (result == "User created Successfully"){
                         call.respond(HttpStatusCode.Created, mapOf("message" to result))
                     }else{
+                        fileService.deleteFileByUrl(profilePhotoUrl)
                         call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "Some error occurred"))
                     }
                 }else{
+                    fileService.deleteFileByUrl(profilePhotoUrl)
                     call.respond(HttpStatusCode.Conflict, ErrorResponse(error = "User already exist"))
                 }
             }catch (e : Exception){
@@ -228,7 +230,6 @@ fun Routing.normalRoutes(){
             try {
                 val resetRequest = call.receive<PasswordResetRequestDto>()
                 val errorList = validatePasswordResetRequest(resetRequest)
-
                 if (errorList.isEmpty()) {
                     val userService = UserService(UserRepository)
                     val result = userService.requestPasswordReset(resetRequest.email)

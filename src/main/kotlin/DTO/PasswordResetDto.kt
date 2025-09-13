@@ -29,7 +29,7 @@ fun validatePasswordResetVerify(verify: PasswordResetVerifyDto): List<String> {
     if (verify.email.isEmpty() || !verify.email.matches(emailRegex)) {
         errorList.add("Invalid email")
     }
-    if (verify.otp.isEmpty() || verify.otp.length != 6 || !verify.otp.all { it.isDigit() }) {
+    if (verify.otp.isEmpty() || verify.otp.length != 4 || !verify.otp.all { it.isDigit() }) {
         errorList.add("Invalid OTP")
     }
     if (verify.newPassword.length < 6) {

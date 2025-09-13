@@ -44,6 +44,6 @@ object OtpRepository {
     }
 
     fun generateOtp(): String {
-        return (100000..999999).random().toString()
+        return (1000..9999).random().toString()
     }
 }

@@ -56,7 +56,21 @@ fun Routing.protectedRoutes() {
                         call.respond(HttpStatusCode.NotFound, ErrorResponse(error = "User not found"))
                     }
                 } catch (e: Exception) {
-                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token: ${e.message}"))
+                    call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = "${e.message}"))
+                }
+            }
+            get("/profile-picture"){
+                val principal = call.principal<JWTPrincipal>()
+                val userId = principal?.subject
+                if (userId == null){
+                    call.respond(HttpStatusCode.Unauthorized, ErrorResponse(error = "Invalid Token: Missing user ID"))
+                    return@get
+                }
+                try {
+                    val photoUrl = UserRepository.getProfilePicture(UUID.fromString(userId))
+                    call.respond(HttpStatusCode.OK, mapOf("url" to photoUrl))
+                }catch (e : Exception){
+                    call.respond(HttpStatusCode.InternalServerError, ErrorResponse(error = e.localizedMessage))
                 }
             }
 

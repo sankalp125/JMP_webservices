@@ -59,7 +59,6 @@ class UserService(private val userRepository : UserRepository) {
             val hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt())
 
             // Update password in database
-            // Since there's no updatePassword method in UserRepository, we'll need to implement it
             return updateUserPassword(email, hashedPassword)
         }
 
